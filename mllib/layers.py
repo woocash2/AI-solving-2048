@@ -33,8 +33,7 @@ class Dense:
 
     def affine(self, X):
         Y = np.matmul(X, self.W)
-        for i in range(len(Y)):
-            Y[i] += self.B
+        Y += self.B
         return Y
 
     def forward(self, X):
@@ -67,9 +66,12 @@ class Convolutional:
         self.activ = activation
 
         self.kernels = []
+
         for i in range(output_channels):
-            K = np.random.uniform(-np.sqrt(6. / (2. * width * height)), np.sqrt(6. / (2. * width * height)), size=(kernel_size, kernel_size, self.channels))
+            K = np.random.uniform(-np.sqrt(6. / (2. * kernel_size * kernel_size)), np.sqrt(6. / (2. * kernel_size * kernel_size)), size=(kernel_size, kernel_size, input_channels))
             self.kernels.append(K)
+
+        self.bias = np.random.uniform(-np.sqrt(6. / (2. * (width - kernel_size + 1) * (height - kernel_size + 1))), np.sqrt(6. / (2. * (width - kernel_size + 1) * (height - kernel_size + 1))), size=(height - kernel_size + 1, width - kernel_size + 1, output_channels))
 
         self.X = None
         self.Y = None
@@ -88,12 +90,15 @@ class Convolutional:
                 for ysrc in range(self.width - self.ksize + 1):
                     self.Y[:, xsrc, ysrc, j] = self.conv_at(X, kernel, xsrc, ysrc)
 
+        self.Y += self.bias
         self.Z = sigmoid(self.Y) if self.activ == 'sigmoid' else relu(self.Y)
         return self.Z
 
     def update_params_and_chain(self, D, lr):
         A = dsigmoid(self.Y) if self.activ == 'sigmoid' else drelu(self.Y)
         D = np.multiply(A, D)
+        gB = np.mean(D, axis=0)
+
         gK = np.zeros((self.knum, self.ksize, self.ksize, self.channels))
         E = np.zeros(self.X.shape)
 
@@ -107,6 +112,7 @@ class Convolutional:
                     E[:, xsrc:xsrc + self.ksize, ysrc:ysrc + self.ksize, :] += np.transpose(M)
 
         self.kernels -= lr * gK
+        self.bias -= lr * gB
         return E
 
 
