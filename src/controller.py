@@ -1,11 +1,8 @@
 import tkinter as tk
-import logic
-from logic import LEFT, RIGHT, UP, DOWN
-import moves
 
 
 INFO = {
-   -1: {'color': '#646464', 'label': '', 'fontsize': 36},
+    -1: {'color': '#646464', 'label': '', 'fontsize': 36},
     0: {'color': '#969696', 'label': '', 'fontsize': 36},
     1: {'color': '#F0F0F0', 'label': '2', 'fontsize': 36},
     2: {'color': '#D2D2D2', 'label': '4', 'fontsize': 36},
@@ -24,8 +21,7 @@ INFO = {
     15: {'color': '#00C7FF', 'label': '32768', 'fontsize': 21}
 }
 
-
-class GameController:
+class Controller:
     def __init__(self):
         self.win = tk.Tk()
         self.grid = tk.Frame(bg=INFO[-1]['color'])
@@ -62,9 +58,10 @@ class GameController:
 
     def update_view(self):
         self.board.spawn_random_tile()
+        tiles = self.board.tiles()
         for i in range(4):
             for j in range(4):
-                value = self.board.tiles[i][j]
+                value = tiles[i][j]
                 self.frames[i][j]['bg'] = INFO[value]['color']
                 self.labels[i][j]['bg'] = INFO[value]['color']
                 self.labels[i][j]['text'] = INFO[value]['label']
@@ -73,29 +70,15 @@ class GameController:
     def make_move(self, event):
         moved = False
         if event.keysym == 'Left':
-            moved = self.board.swipe(LEFT)
+            moved = self.board.swipe('left')
         elif event.keysym == 'Right':
-            moved = self.board.swipe(RIGHT)
+            moved = self.board.swipe('right')
         elif event.keysym == 'Up':
-            moved = self.board.swipe(UP)
+            moved = self.board.swipe('up')
         elif event.keysym == 'Down':
-            moved = self.board.swipe(DOWN)
+            moved = self.board.swipe('down')
         if moved:
             self.update_view()
 
     def play_game(self, board):
-        self.board = board
-        self.win.bind('<Left>', self.make_move)
-        self.win.bind('<Right>', self.make_move)
-        self.win.bind('<Up>', self.make_move)
-        self.win.bind('<Down>', self.make_move)
-        self.create_gui()
-        self.update_view()
-        self.win.mainloop()
-
-
-if __name__ == '__main__':
-    left_moves, right_moves = moves.load_moves()
-    board = logic.Board(left_moves, right_moves)
-    game = GameController()
-    game.play_game(board)
+        pass

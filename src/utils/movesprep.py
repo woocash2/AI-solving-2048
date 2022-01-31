@@ -1,4 +1,6 @@
 import pickle
+from pathlib import Path
+import os
 
 POSSIBLE_ROWS = 16 * 16 * 16 * 16
 
@@ -8,6 +10,10 @@ if numbers stored in row are 2^a, 2^b, 2^c, 2^d then the bijective hash of this 
 [a - 1] + [16 * (b - 1)] + [16^2 * (c - 1)] + [16^3 * (d - 1)]
 it is a bijection since a, b, c, d vary from 1 to 16 inclusive
 """
+
+
+def data_path():
+    return os.path.join(Path(__file__).parent.parent.parent, 'data')
 
 
 def row_to_hash(row):
@@ -72,16 +78,16 @@ def precompute_moves():
         right_row.reverse()
         right_moves[row_to_hash(row)] = row_to_hash(right_row)
 
-    with open('data/left_moves.pickle', 'wb') as file:
+    with open(os.path.join(data_path(), 'left_moves.pickle'), 'wb') as file:
         pickle.dump(left_moves, file)
-    with open('data/right_moves.pickle', 'wb') as file:
+    with open(os.path.join(data_path(), 'right_moves.pickle'), 'wb') as file:
         pickle.dump(right_moves, file)
 
 
 def load_moves():
-    with open('data/left_moves.pickle', 'rb') as file:
+    with open(os.path.join(data_path(), 'left_moves.pickle'), 'rb') as file:
         left_moves = pickle.load(file)
-    with open('data/right_moves.pickle', 'rb') as file:
+    with open(os.path.join(data_path(), 'right_moves.pickle'), 'rb') as file:
         right_moves = pickle.load(file)
     return left_moves, right_moves
 

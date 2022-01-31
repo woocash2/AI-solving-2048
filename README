@@ -1,0 +1,5 @@
+To precompute moves run
+python3 src/utils/movesprep.py
+python3 src/mcts.py
+To run
+src/main.py

@@ -1,4 +1,5 @@
 import numpy as np
+import copy
 
 
 def mse(X, Y):
@@ -38,18 +39,14 @@ class Sequential:
         for layer in self.layers:
             Y = layer.forward(self.inputs[-1])
             self.inputs.append(Y)
-        print('forward norms', [np.linalg.norm(np.mean(i, axis=0)) for i in self.inputs])
         return self.inputs[-1]
 
     def backward(self, Y, lr):
         X = self.inputs[-1]
         D = self.dloss(X, Y)
 
-        print('backward norms', end=' ')
         for i, L in reversed(list(enumerate(self.layers))):
-            print(np.linalg.norm(D), end=' ')
             D = L.update_params_and_chain(D, lr)
-        print(np.linalg.norm(D))
 
     def summary_loss(self, data, labels):
         batches = float(len(data))
@@ -58,14 +55,19 @@ class Sequential:
             ls += np.sum(self.loss(self.predict(X), Y) / batches)
         return ls
 
-    def fit(self, data, labels, epochs, lr):
+    def fit(self, data, labels, epochs, lr, verbose=True):
         for e in range(epochs):
-            print('Epoch', e + 1)
+            if verbose:
+                print('Epoch', e + 1)
             b = 1
             for X, Y in list(zip(data, labels)):
-                print('batch', b)
-                b += 1
                 self.predict(X)
                 self.backward(Y, lr)
-            print('Loss:', self.summary_loss(data, labels))
-        print('Finished')
+                if verbose:
+                    print('batch', b)
+                b += 1
+            if verbose:
+                print('Loss:', self.summary_loss(data, labels))
+
+    def cpy(self):
+        return copy.deepcopy(self)

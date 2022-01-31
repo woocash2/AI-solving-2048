@@ -1,6 +1,14 @@
 import numpy as np
 
 
+def tanh(X):
+    return np.tanh(X)
+
+
+def dtanh(X):
+    return 1. - np.multiply(tanh(X), tanh(X))
+
+
 def relu(X):
     return X * (X > 0.)
 
@@ -17,9 +25,13 @@ def dsigmoid(X):
     return np.multiply(sigmoid(X), (1. - sigmoid(X)))
 
 
+activation = {'relu': relu, 'sigmoid': sigmoid, 'tanh': tanh}
+dactivation = {'relu': drelu, 'sigmoid': dsigmoid, 'tanh': dtanh}
+
+
 class Dense:
 
-    def __init__(self, input_size, output_size, activation='relu'):
+    def __init__(self, input_size, output_size, activation=None):
         self.insize = input_size
         self.outsize = output_size
         self.activ = activation
@@ -39,11 +51,11 @@ class Dense:
     def forward(self, X):
         self.X = X
         self. Y = self.affine(X)
-        self.Z = sigmoid(self.Y) if self.activ == 'sigmoid' else relu(self.Y)
+        self.Z = self.Y if self.activ not in activation else activation[self.activ](self.Y)
         return self.Z
 
     def update_params_and_chain(self, D, lr):
-        A = dsigmoid(self.Y) if self.activ == 'sigmoid' else drelu(self.Y)
+        A = self.Y if self.activ not in dactivation else dactivation[self.activ](self.Y)
         E = np.multiply(A, D)
         gB = np.mean(E, axis=0)
         gW = np.matmul(np.transpose(self.X), E)
@@ -57,7 +69,7 @@ class Dense:
 
 class Convolutional:
 
-    def __init__(self, height, width, input_channels, output_channels, kernel_size, activation='relu'):
+    def __init__(self, height, width, input_channels, output_channels, kernel_size, activation=None):
         self.height = height
         self.width = width
         self.channels = input_channels
@@ -91,11 +103,11 @@ class Convolutional:
                     self.Y[:, xsrc, ysrc, j] = self.conv_at(X, kernel, xsrc, ysrc)
 
         self.Y += self.bias
-        self.Z = sigmoid(self.Y) if self.activ == 'sigmoid' else relu(self.Y)
+        self.Z = self.Y if self.activ not in activation else activation[self.activ](self.Y)
         return self.Z
 
     def update_params_and_chain(self, D, lr):
-        A = dsigmoid(self.Y) if self.activ == 'sigmoid' else drelu(self.Y)
+        A = self.Y if self.activ not in dactivation else dactivation[self.activ](self.Y)
         D = np.multiply(A, D)
         gB = np.mean(D, axis=0)
 
